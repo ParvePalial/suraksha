@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "suraksha" "\0"
+            VALUE "FileDescription", "mainappsuraksha" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "suraksha" "\0"
+            VALUE "InternalName", "mainappsuraksha" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "suraksha.exe" "\0"
-            VALUE "ProductName", "suraksha" "\0"
+            VALUE "OriginalFilename", "mainappsuraksha.exe" "\0"
+            VALUE "ProductName", "mainappsuraksha" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -3,14 +3,13 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async'; // For simulating backend calls
 import 'package:geolocator/geolocator.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
 
 void main() {
   runApp(const SurakshaApp());
 }
 
 class SurakshaApp extends StatelessWidget {
-  const SurakshaApp({Key? key}) : super(key: key);
+  const SurakshaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class SurakshaApp extends StatelessWidget {
 }
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({Key? key}) : super(key: key);
+  const SignUpPage({super.key});
 
   @override
   _SignUpPageState createState() => _SignUpPageState();
@@ -52,12 +51,14 @@ class _SignUpPageState extends State<SignUpPage> {
     if (_selectedUserType == 'Citizen') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => CitizenDashboard(username: username)),
+        MaterialPageRoute(
+            builder: (context) => CitizenDashboard(username: username)),
       );
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => AuthorityDashboard(username: username)),
+        MaterialPageRoute(
+            builder: (context) => AuthorityDashboard(username: username)),
       );
     }
   }
@@ -125,7 +126,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
 class CitizenDashboard extends StatefulWidget {
   final String username;
-  const CitizenDashboard({Key? key, required this.username}) : super(key: key);
+  const CitizenDashboard({super.key, required this.username});
 
   @override
   _CitizenDashboardState createState() => _CitizenDashboardState();
@@ -136,7 +137,8 @@ class _CitizenDashboardState extends State<CitizenDashboard> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
   bool _alertActive = false;
-  String _statusText = 'Press the button and say "Raksha" three times to activate';
+  String _statusText =
+      'Press the button and say "Raksha" three times to activate';
   String _lastWords = '';
   int _rakshaCount = 0;
 
@@ -201,7 +203,8 @@ class _CitizenDashboardState extends State<CitizenDashboard> {
     setState(() {
       _alertActive = true;
       _isListening = false;
-      _statusText = 'EMERGENCY ALERT ACTIVATED!\nAttempting to notify authorities...';
+      _statusText =
+          'EMERGENCY ALERT ACTIVATED!\nAttempting to notify authorities...';
     });
     _speech.stop();
     _notifyAuthorities();
@@ -219,7 +222,8 @@ class _CitizenDashboardState extends State<CitizenDashboard> {
       _alertActive = false;
       _lastWords = '';
       _rakshaCount = 0;
-      _statusText = 'Alert cancelled. Press the button and say "Raksha" three times to activate';
+      _statusText =
+          'Alert cancelled. Press the button and say "Raksha" three times to activate';
     });
   }
 
@@ -267,7 +271,8 @@ class _CitizenDashboardState extends State<CitizenDashboard> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Welcome, ${widget.username}', style: const TextStyle(fontSize: 24)),
+            Text('Welcome, ${widget.username}',
+                style: const TextStyle(fontSize: 24)),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _listen,
@@ -281,7 +286,9 @@ class _CitizenDashboardState extends State<CitizenDashboard> {
             const SizedBox(height: 20),
             Text(
               _statusText,
-              style: TextStyle(fontSize: 18, color: _alertActive ? Colors.red : Colors.black),
+              style: TextStyle(
+                  fontSize: 18,
+                  color: _alertActive ? Colors.red : Colors.black),
               textAlign: TextAlign.center,
             ),
             if (_alertActive)
@@ -312,202 +319,25 @@ class _CitizenDashboardState extends State<CitizenDashboard> {
   }
 }
 
-
-class SafeMapsPage extends StatefulWidget {
-  const SafeMapsPage({Key? key}) : super(key: key);
-
-  @override
-  _SafeMapsPageState createState() => _SafeMapsPageState();
-}
-
-class _SafeMapsPageState extends State<SafeMapsPage> {
-  MapboxMapController? mapController;
-  Position? _currentPosition;
-  bool _isLoading = true;
-  String _errorMessage = '';
-
-  // Mapbox Studio style URL
-  static const String mapboxStyleUrl ='https://api.mapbox.com/styles/v1/codersamurai/cm0ssu9lc00q901o301562nne/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiY29kZXJzYW11cmFpIiwiYSI6ImNtMHNwNWZnNzBobnUycXMwaWMyMzJzN20ifQ.6NSYGuIGf6Or94OQaNujIg/draft';
-  //static const String mapboxStyleUrl = 'https://api.mapbox.com/styles/v1/codersamurai/cm0ssu9lc00q901o301562nne.html?title=copy&access_token=pk.eyJ1IjoiY29kZXJzYW11cmFpIiwiYSI6ImNtMHNwNWZnNzBobnUycXMwaWMyMzJzN20ifQ.6NSYGuIGf6Or94OQaNujIg&zoomwheel=true&fresh=true#2/37.75/-92.25';
-  static const String mapboxAccessToken = 'pk.eyJ1IjoiY29kZXJzYW11cmFpIiwiYSI6ImNtMHNwNWZnNzBobnUycXMwaWMyMzJzN20ifQ.6NSYGuIGf6Or94OQaNujIg';
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeMap();
-  }
-
-  Future<void> _initializeMap() async {
-    try {
-      await _getCurrentLocation();
-      setState(() => _isLoading = false);
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to initialize map: $e';
-      });
-    }
-  }
-
-  Future<void> _getCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Location services are disabled.');
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        throw Exception('Location permissions are denied.');
-      }
-    }
-
-    _currentPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-  }
-
-  void _onMapCreated(MapboxMapController controller) {
-    mapController = controller;
-    _addMarker();
-    _setupLocationTracking();
-  }
-
-  void _addMarker() {
-    if (_currentPosition != null && mapController != null) {
-      mapController!.addSymbol(
-        SymbolOptions(
-          geometry: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          iconImage: 'assets/marker.png',
-          iconSize: 1.5,
-        ),
-      );
-    }
-  }
-
-  void _setupLocationTracking() {
-    const LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 10,
-    );
-    Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
-      setState(() => _currentPosition = position);
-      _updateMapPosition();
-    });
-  }
-
-  void _updateMapPosition() {
-    if (mapController != null && _currentPosition != null) {
-      mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-            zoom: 15.0,
-          ),
-        ),
-      );
-    }
-  }
+class SafeMapsPage extends StatelessWidget {
+  const SafeMapsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Safe Maps'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location),
-            onPressed: _updateMapPosition,
-          ),
-        ],
       ),
-      body: _buildBody(),
+      body: const Center(
+        child: Text('Map functionality will be available here.'),
+      ),
     );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (_errorMessage.isNotEmpty) {
-      return Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)));
-    } else if (_currentPosition == null) {
-      return const Center(child: Text('Unable to get current location'));
-    } else {
-      return Stack(
-        children: [
-          MapboxMap(
-            accessToken: mapboxAccessToken,
-            styleString: mapboxStyleUrl,
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-              zoom: 15.0,
-            ),
-            myLocationEnabled: true,
-            myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
-            minMaxZoomPreference: const MinMaxZoomPreference(11, 17),
-          ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _toggleMapLayers,
-              child: const Icon(Icons.layers),
-            ),
-          ),
-        ],
-      );
-    }
-  }
-
-  void _toggleMapLayers() {
-    // Implement layer toggling functionality
-    // This could show a modal bottom sheet with different map layer options
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.map),
-                title: const Text('Standard'),
-                onTap: () {
-                  // Switch to standard map style
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.satellite),
-                title: const Text('Satellite'),
-                onTap: () {
-                  // Switch to satellite map style
-                  Navigator.pop(context);
-                },
-              ),
-              // Add more map style options as needed
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    mapController?.dispose();
-    super.dispose();
   }
 }
 
-
-
 class AuthorityDashboard extends StatefulWidget {
   final String username;
-  const AuthorityDashboard({Key? key, required this.username}) : super(key: key);
+  const AuthorityDashboard({super.key, required this.username});
 
   @override
   _AuthorityDashboardState createState() => _AuthorityDashboardState();
@@ -519,10 +349,41 @@ class _AuthorityDashboardState extends State<AuthorityDashboard> {
   final _phoneController = TextEditingController();
   String? _selectedState;
   final List<String> _states = [
-    'Maharashtra', 'Gujarat', 'Goa', 'Kerala', 'Karnataka', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'West Bengal',
-    'Bihar', 'Jharkhand', 'Odisha', 'Punjab', 'Haryana', 'Rajasthan', 'Uttar Pradesh', 'Madhya Pradesh', 'Chhattisgarh',
-    'Assam', 'Sikkim', 'Arunachal Pradesh', 'Nagaland', 'Manipur', 'Tripura', 'Meghalaya', 'Mizoram', 'Nagaland', 'Andaman and Nicobar Islands',
-    'Lakshadweep', 'Dadra and Nagar Haveli and Daman and Diu', 'Puducherry', 'Delhi', 'Chandigarh', 'Jammu and Kashmir', 'Ladakh'
+    'Maharashtra',
+    'Gujarat',
+    'Goa',
+    'Kerala',
+    'Karnataka',
+    'Tamil Nadu',
+    'Andhra Pradesh',
+    'Telangana',
+    'West Bengal',
+    'Bihar',
+    'Jharkhand',
+    'Odisha',
+    'Punjab',
+    'Haryana',
+    'Rajasthan',
+    'Uttar Pradesh',
+    'Madhya Pradesh',
+    'Chhattisgarh',
+    'Assam',
+    'Sikkim',
+    'Arunachal Pradesh',
+    'Nagaland',
+    'Manipur',
+    'Tripura',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Andaman and Nicobar Islands',
+    'Lakshadweep',
+    'Dadra and Nagar Haveli and Daman and Diu',
+    'Puducherry',
+    'Delhi',
+    'Chandigarh',
+    'Jammu and Kashmir',
+    'Ladakh'
   ];
   Map<String, String> _profile = {};
 
@@ -602,7 +463,7 @@ class _AuthorityDashboardState extends State<AuthorityDashboard> {
 
 class ShowDetailsPage extends StatelessWidget {
   final Map<String, String> profile;
-  const ShowDetailsPage({Key? key, required this.profile}) : super(key: key);
+  const ShowDetailsPage({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -616,11 +477,11 @@ class ShowDetailsPage extends StatelessWidget {
           child: profile.isEmpty
               ? const Text('No data entered')
               : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: profile.entries
-                .map((entry) => Text('${entry.key}: ${entry.value}'))
-                .toList(),
-          ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: profile.entries
+                      .map((entry) => Text('${entry.key}: ${entry.value}'))
+                      .toList(),
+                ),
         ),
       ),
     );

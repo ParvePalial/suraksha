@@ -1,6 +1,6 @@
 {
-    "name": "suraksha",
-    "short_name": "suraksha",
+    "name": "mainappsuraksha",
+    "short_name": "mainappsuraksha",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
