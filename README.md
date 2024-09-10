@@ -1,5 +1,6 @@
-# mainappsuraksha
+# Suraksha
 
+Citizen Safety Voice Activation assist
 A new Flutter project.
 
 ## Getting Started
